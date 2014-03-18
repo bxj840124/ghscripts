@@ -35,19 +35,22 @@ und.each(stugit, function(stu) {
 var query_err = new Array(),
     remove_err = new Array();
 
+//Team b00505012: removed 93 repos
 if (fs.existsSync("query_repo.json")) {
   console.log("query_repo.json exists, reading from it...");
   var team_repos = JSON.parse(fs.readFileSync("query_repo.json", { encoding: "utf-8" }));
   removeAll(team_repos);
 } else {
+  var pos = 0;
   forM(teams, function(team, k) {
+    pos = pos + 1;
     gh.orgs.getTeamRepos({ "id": team.team_data.id }, function(err, repos) {
       if (err !== null) {
         console.log("querying team " + team.team_data.name + "/" + team.student.stu_id + ": ERROR");
         query_err.push({ "student": team.student, "error": err });
         k(false);
       } else {
-        console.log("querying team " + team.team_data.name + ": " + repos.length + " repo(s)");
+        console.log(pos + "/" + teams.length + "; querying team " + team.team_data.name + ": " + repos.length + " repo(s)");
         k({ "student": team.student, "team_data": team.team_data, "repos": repos});
       }
     });
@@ -61,8 +64,10 @@ if (fs.existsSync("query_repo.json")) {
 }
 
 function removeAll(team_repos) {
+  var pos = 0;
   forM(team_repos, function(team, k) {
-    if (team!==false && team.repos.length !== 10) {
+    pos = pos + 1;
+    if (team!==false) {
       var cnt = 0;
       forM(team.repos, function(repo, k) {
         if (repo.owner.login.toLowerCase() != "ntudsa2014"
@@ -87,7 +92,7 @@ function removeAll(team_repos) {
           k(false);
         }
       }, function(res) {
-        console.log("Team " + team.team_data.name + ": removed " + cnt + " repos");
+        console.log(pos + "/" + team_repos.length + "; Team " + team.team_data.name + ": removed " + cnt + " repos");
         k(true);
       });
     } else {
