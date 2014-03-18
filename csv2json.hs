@@ -15,7 +15,7 @@ splitWhen p (x:xs) = (x:hd):tl
 
 trim :: String -> String
 trim = dropSpaces . reverse . dropSpaces . reverse
-  where dropSpaces = dropWhile (== ' ') . dropWhile (== '\t') . dropWhile (== '\n')
+  where dropSpaces = dropWhile (`elem` " \t\r\n\f\v")
 
 showKeyValue (a, b) = "\"" ++ a ++ "\": \"" ++ b ++ "\""
 
