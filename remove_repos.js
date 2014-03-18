@@ -35,56 +35,67 @@ und.each(stugit, function(stu) {
 var query_err = new Array(),
     remove_err = new Array();
 
-forM(teams, function(team, k) {
-  gh.orgs.getTeamRepos({ "id": team.team_data.id }, function(err, repos) {
-    if (err !== null) {
-      console.log("querying team " + team.team_data.name + "/" + team.student.stu_id + ": ERROR");
-      query_err.push({ "student": team.student, "error": err });
-      k(false);
-    } else {
-      console.log("querying team " + team.team_data.name + ": " + repos.length + " repo(s)");
-      k({ "student": team.student, "team_data": team.team_data, "repos": repos});
-    }
-  });
-}, function(team_repos) {
-
-fs.writeFileSync("query_repo_error.json", JSON.stringify(query_err, null, 2));
-fs.writeFileSync("query_repo.json", JSON.stringify(team_repos, null, 2));
-console.log("Query finished. Removing repos...");
-
-forM(team_repos, function(team, k) {
-  if (team!==false && team.repos.length !== 10) {
-    var cnt = 0;
-    forM(team.repos, function(repo, k) {
-      if (repo.owner.login.toLowerCase() != "ntudsa2014"
-        && repo.owner.login.toLowerCase() != github_name[team.student.stu_id].toLowerCase())
-      {
-        gh.orgs.deleteTeamRepo({ "id": team.team_data.id // team id
-                               , "user": repo.owner.login
-                               , "repo": repo.name }
-                               , function(err, data) {
-          if (err !== null) {
-            console.log("Remove " + repo.full_name + " from " + team.team_data.name + " error");
-            remove_err.push({ "student": team.student, "repo": repo, "error": err });
-            k(err);
-          } else {
-            console.log("    remove " + repo.full_name);
-            ++cnt;
-            k(true);
-          }
-        });
-      } else {
+if (fs.existsSync("query_repo.json")) {
+  console.log("query_repo.json exists, reading from it...");
+  var team_repos = JSON.parse(fs.readFileSync("query_repo.json", { encoding: "utf-8" }));
+  removeAll(team_repos);
+} else {
+  forM(teams, function(team, k) {
+    gh.orgs.getTeamRepos({ "id": team.team_data.id }, function(err, repos) {
+      if (err !== null) {
+        console.log("querying team " + team.team_data.name + "/" + team.student.stu_id + ": ERROR");
+        query_err.push({ "student": team.student, "error": err });
         k(false);
+      } else {
+        console.log("querying team " + team.team_data.name + ": " + repos.length + " repo(s)");
+        k({ "student": team.student, "team_data": team.team_data, "repos": repos});
       }
-    }, function(res) {
-      console.log("Team " + team.team_data.name + ": removed " + cnt + " repos");
-      k(true);
     });
-  } else {
-    k(false);
-  }
-}, function(res) {
+  }, function(team_repos) {
 
-fs.writeFileSync("remove_repo_error.json", JSON.stringify(remove_err, null, 2));
-console.log("Remove finished.");
-});});
+  fs.writeFileSync("query_repo_error.json", JSON.stringify(query_err, null, 2));
+  fs.writeFileSync("query_repo.json", JSON.stringify(team_repos, null, 2));
+  console.log("Query finished. Removing repos...");
+  removeAll(team_repos);
+  });
+}
+
+function removeAll(team_repos) {
+  forM(team_repos, function(team, k) {
+    if (team!==false && team.repos.length !== 10) {
+      var cnt = 0;
+      forM(team.repos, function(repo, k) {
+        if (repo.owner.login.toLowerCase() != "ntudsa2014"
+          && (!github_name[team.student.stu_id]
+            || repo.owner.login.toLowerCase() != github_name[team.student.stu_id].toLowerCase()))
+        {
+          gh.orgs.deleteTeamRepo({ "id": team.team_data.id // team id
+                                 , "user": repo.owner.login
+                                 , "repo": repo.name }
+                                 , function(err, data) {
+            if (err !== null) {
+              console.log("Remove " + repo.full_name + " from " + team.team_data.name + " error");
+              remove_err.push({ "student": team.student, "repo": repo, "error": err });
+              k(err);
+            } else {
+              console.log("    remove " + repo.full_name);
+              ++cnt;
+              k(true);
+            }
+          });
+        } else {
+          k(false);
+        }
+      }, function(res) {
+        console.log("Team " + team.team_data.name + ": removed " + cnt + " repos");
+        k(true);
+      });
+    } else {
+      k(false);
+    }
+  }, function(res) {
+
+  fs.writeFileSync("remove_repo_error.json", JSON.stringify(remove_err, null, 2));
+  console.log("Remove finished.");
+  });
+}
