@@ -1,5 +1,6 @@
 var fs = require("fs");
 var und = require("underscore");
+var dsa14 = require("./utils.js");
 
 var ghapi = require("github");
 var gh = new ghapi({ version: "3.0.0" });
@@ -26,25 +27,10 @@ und.each(teams, function (team) {
   team_id[team.team_data.name] = team.team_data.id;
 });
 
-// forM :: [a] -> (a -> Cont r b) -> Cont r [b]
-function forM(arr, fn, k) {
-  res = new Array();
-  (function rec(i) {
-    if (i < arr.length) {
-      fn(arr[i], function(data) {
-        res.push(data);
-        rec(i+1);
-      });
-    } else {
-      k(res);
-    }
-  })(0);
-}
-
 var add_error = new Array(),
     add_ok = new Array();
 
-forM(names, function(usr, k) {
+dsa14.forM(names, function(usr, k) {
   console.log("Adding " + usr.github_name + " to " + team_id[usr.stu_id]);
   if (team_id[usr.stu_id] === undefined) {
     console.log("undefined ERROR");

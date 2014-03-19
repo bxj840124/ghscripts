@@ -1,5 +1,6 @@
 var fs = require("fs");
 var und = require("underscore");
+var dsa14 = require("./utils.js");
 
 var ghapi = require("github");
 var gh = new ghapi({ version: "3.0.0" });
@@ -11,28 +12,13 @@ gh.authenticate({
 
 var stus = JSON.parse(fs.readFileSync("../jsons/stulist.json"));
 
-// forM :: [a] -> (a -> Cont r b) -> Cont r [b]
-function forM(arr, fn, k) {
-  res = new Array();
-  (function rec(i) {
-    if (i < arr.length) {
-      fn(arr[i], function(data) {
-        res.push(data);
-        rec(i+1);
-      });
-    } else {
-      k(res);
-    }
-  })(0);
-}
-
 var repos = ["NTUDSA2014/dsa14hw3", "NTUDSA2014/dsa14hw4", "NTUDSA2014/dsa14hw5",
              "NTUDSA2014/dsa14hw6", "NTUDSA2014/dsa14hw7"]
 
 var create_errors = new Array(),
     ret_data = new Array();
 
-forM(stus, function(stu, k) {
+dsa14.forM(stus, function(stu, k) {
   if (stu.identity == "校內生") {
     console.log("Creating team " + stu.stu_id);
     gh.orgs.createTeam({ "org": "NTUDSA2014"
