@@ -41,5 +41,5 @@ dsa14.forM(stus, function(stu, k) {
 
 fs.writeFileSync("create_error.json", JSON.stringify(create_errors, null, 2));
 fs.writeFileSync("team_data.json", JSON.stringify(ret_data, null, 2));
-console.log("done: total " + create_errors.length + "error(s).");
+console.log("done: total " + create_errors.length + " error(s).");
 });

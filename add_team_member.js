@@ -13,7 +13,7 @@ gh.authenticate({
 var names =
   JSON.parse(
     fs.readFileSync("../jsons/stugit.json"
-                   , { encoding: "utf-8" }))).map(function (stu) {
+                   , { encoding: "utf-8" })).map(function (stu) {
   return { stu_id: stu.stu_id.toLowerCase(), github_name: stu.github_name };
 });
 
